@@ -31,7 +31,15 @@ module PgSearch
     def update_content
       methods = Array(searchable.pg_search_multisearchable_options[:against])
       searchable_text = methods.map { |symbol| searchable.send(symbol) }.join(" ")
-      self.content = searchable_text
+      self.content = searchable_text_to_content(searchable_text)
+    end
+
+    def searchable_text_to_content(searchable_text)
+      if PgSearch.multisearch_options.is_a?(Hash) && PgSearch.multisearch_options[:transliterate]
+        Transliterator.transliterate(searchable_text)
+      else
+        searchable_text
+      end
     end
   end
 end
