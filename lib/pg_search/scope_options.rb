@@ -73,7 +73,7 @@ module PgSearch
       normalizer = Normalizer.new(config)
 
       feature_class.new(
-        config.query,
+        query,
         feature_options[feature_name],
         config.columns,
         config.model,
@@ -84,6 +84,14 @@ module PgSearch
     def rank
       (config.ranking_sql || ":tsearch").gsub(/:(\w*)/) do
         feature_for($1).rank.to_sql
+      end
+    end
+
+    def query
+      if config.transliterate
+        Transliterator.transliterate(config.query)
+      else
+        config.query
       end
     end
   end

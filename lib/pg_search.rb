@@ -11,6 +11,7 @@ require "pg_search/multisearch"
 require "pg_search/multisearchable"
 require "pg_search/normalizer"
 require "pg_search/scope_options"
+require "pg_search/transliterator"
 require "pg_search/version"
 
 module PgSearch

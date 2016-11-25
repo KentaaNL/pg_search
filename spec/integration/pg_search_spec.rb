@@ -1237,6 +1237,28 @@ describe "an Active Record model which includes PgSearch" do
         expect(classes).to include AnotherSearchableSubclassModel
       end
     end
+
+    context "transliteration" do
+      before { allow(PgSearch).to receive(:multisearch_options).and_return({:transliterate => true}) }
+      subject { PgSearch.multisearch(query).map(&:searchable) }
+
+      with_model :MultisearchableModel do
+        table do |t|
+          t.string :title
+        end
+        model do
+          include PgSearch
+          multisearchable :against => :title
+        end
+      end
+
+      # \303\241 is a with acute accent
+      # \303\251 is e with acute accent
+      let!(:transliterated_record) { MultisearchableModel.create!(:title => "\303\241bcdef") }
+      let(:query) { "abcd\303\251f" }
+
+      it { is_expected.to include(transliterated_record) }
+    end
   end
 
   describe ".disable_multisearch" do
