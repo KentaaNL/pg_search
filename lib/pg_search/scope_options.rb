@@ -16,7 +16,7 @@ module PgSearch
       scope.
         select("#{quoted_table_name}.*, (#{rank}) AS pg_search_rank").
         where(conditions).
-        order("pg_search_rank DESC, #{order_within_rank}").
+        order(Arel.sql("pg_search_rank DESC, #{order_within_rank}")).
         joins(joins).
         extend(DisableEagerLoading)
     end
