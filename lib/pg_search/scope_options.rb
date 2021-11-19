@@ -14,13 +14,12 @@ module PgSearch
 
     def apply(scope)
       scope = include_table_aliasing_for_rank(scope)
-      rank_table_alias = scope.pg_search_rank_table_alias(include_counter: true)
 
-      scope
-        .joins(rank_join(rank_table_alias))
-        .order(Arel.sql("#{rank_table_alias}.rank DESC, #{order_within_rank}"))
-        .extend(WithPgSearchRank)
-        .extend(WithPgSearchHighlight[feature_for(:tsearch)])
+      if config.associations.any?
+        apply_with_inner_join(scope)
+      else
+        apply_without_inner_join(scope)
+      end
     end
 
     module WithPgSearchHighlight
@@ -54,6 +53,34 @@ module PgSearch
       end
     end
 
+    module WithPgSearchRankNoInnerJoin
+      def self.[](rank_value)
+        Module.new do
+          include WithPgSearchRankNoInnerJoin
+          define_method(:rank_value) { rank_value }
+        end
+      end
+
+      def rank_field
+        "#{rank_value} AS pg_search_rank"
+      end
+
+      def rank_value
+        raise TypeError, "You need to instantiate this module with []"
+      end
+
+      def with_pg_search_rank
+        scope = self
+        scope = scope.select("#{table_name}.*") unless scope.select_values.any?
+        scope.select(rank_field)
+      end
+
+      def where_pg_search_rank(value)
+        scope = self
+        scope.where("#{rank_value}#{value}")
+      end
+    end
+
     module PgSearchRankTableAliasing
       def pg_search_rank_table_alias(include_counter: false)
         components = [arel_table.name]
@@ -78,6 +105,24 @@ module PgSearch
 
     delegate :connection, :quoted_table_name, to: :model
 
+    def apply_with_inner_join(scope)
+      rank_table_alias = scope.pg_search_rank_table_alias(include_counter: true)
+
+      scope
+        .joins(rank_join(rank_table_alias))
+        .order(Arel.sql("#{rank_table_alias}.rank DESC, #{order_within_rank}"))
+        .extend(WithPgSearchRank)
+        .extend(WithPgSearchHighlight[feature_for(:tsearch)])
+    end
+
+    def apply_without_inner_join(scope)
+      scope
+        .where(conditions)
+        .order(Arel.sql("#{rank_order}, #{order_within_rank}"))
+        .extend(WithPgSearchRankNoInnerJoin[rank])
+        .extend(WithPgSearchHighlight[feature_for(:tsearch)])
+    end
+
     def subquery
       model
         .unscoped
@@ -94,6 +139,7 @@ module PgSearch
             .reject { |_feature_name, feature_options| feature_options && feature_options[:sort_only] }
             .map { |feature_name, _feature_options| feature_for(feature_name).conditions }
             .inject { |accumulator, expression| Arel::Nodes::Or.new(accumulator, expression) }
+            .to_sql
     end
 
     def order_within_rank
@@ -143,6 +189,10 @@ module PgSearch
 
     def rank_join(rank_table_alias)
       "INNER JOIN (#{subquery.to_sql}) AS #{rank_table_alias} ON #{primary_key} = #{rank_table_alias}.pg_search_id"
+    end
+
+    def rank_order
+      "#{rank} DESC"
     end
 
     def include_table_aliasing_for_rank(scope)
