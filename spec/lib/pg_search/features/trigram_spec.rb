@@ -16,7 +16,7 @@ describe PgSearch::Features::Trigram do
     ]
   }
   let(:normalizer) { PgSearch::Normalizer.new(config) }
-  let(:config) { OpenStruct.new(ignore: []) }
+  let(:config) { instance_double(PgSearch::Configuration, ignore: []) }
 
   let(:coalesced_columns) do
     <<~SQL.squish
@@ -35,7 +35,6 @@ describe PgSearch::Features::Trigram do
 
   describe 'conditions' do
     it 'escapes the search document and query' do
-      config.ignore = []
       expect(feature.conditions.to_sql).to eq("('#{query}' % (#{coalesced_columns}))")
     end
 
@@ -45,14 +44,14 @@ describe PgSearch::Features::Trigram do
       end
 
       it 'uses the "<%" operator when searching by word_similarity' do
-        config.ignore = []
         expect(feature.conditions.to_sql).to eq("('#{query}' <% (#{coalesced_columns}))")
       end
     end
 
     context 'when ignoring accents' do
+      let(:config) { instance_double(PgSearch::Configuration, ignore: [:accents]) }
+
       it 'escapes the search document and query, but not the accent function' do
-        config.ignore = [:accents]
         expect(feature.conditions.to_sql).to eq("(unaccent('#{query}') % (unaccent(#{coalesced_columns})))")
       end
     end
