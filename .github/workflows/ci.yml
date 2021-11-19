@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - github-actions
+      - v2.3.7-join-fix
   pull_request:
     branches:
       - master
