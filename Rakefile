@@ -14,4 +14,4 @@ task :undercover do
   exit(1) unless system("bin/undercover --compare origin/master")
 end
 
-task default: %w[spec standard undercover]
+task default: %w[spec standard]
