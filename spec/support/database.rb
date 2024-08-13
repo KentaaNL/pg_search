@@ -12,12 +12,8 @@ end
 begin
   connection_options = {adapter: "postgresql", database: "pg_search_test", min_messages: "warning"}
   if ENV["CI"]
-    connection_options.merge!(
-      host: ENV["POSTGRES_HOST"],
-      port: ENV["POSTGRES_PORT"],
-      username: ENV["POSTGRES_USER"] || ENV["USER"],
-      password: ENV["POSTGRES_PASSWORD"]
-    )
+    connection_options[:username] = "postgres"
+    connection_options[:password] = "postgres"
   end
   ActiveRecord::Base.establish_connection(connection_options)
   connection = ActiveRecord::Base.connection
