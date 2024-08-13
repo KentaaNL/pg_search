@@ -2,14 +2,14 @@
 
 require "spec_helper"
 
-# rubocop:disable RSpec/NestedGroups
+# standard:disable RSpec/NestedGroups
 describe PgSearch::Multisearch::Rebuilder do
   with_table "pg_search_documents", &DOCUMENTS_SCHEMA
 
-  describe 'when initialized with a model that is not multisearchable' do
+  describe "when initialized with a model that is not multisearchable" do
     with_model :not_multisearchable
 
-    it 'raises an exception' do
+    it "raises an exception" do
       expect {
         described_class.new(NotMultisearchable)
       }.to raise_exception(
@@ -108,7 +108,7 @@ describe PgSearch::Multisearch::Rebuilder do
             end
           end
 
-          # rubocop:disable RSpec/ExampleLength
+          # standard:disable RSpec/ExampleLength
           it "executes the default SQL" do
             time = Time.utc(2001, 1, 1, 0, 0, 0)
             rebuilder = described_class.new(Model, -> { time })
@@ -137,7 +137,7 @@ describe PgSearch::Multisearch::Rebuilder do
             expect(executed_sql.length).to eq(1)
             expect(executed_sql.first.strip).to eq(expected_sql.strip)
           end
-          # rubocop:enable RSpec/ExampleLength
+          # standard:enable RSpec/ExampleLength
 
           context "with a model with a camel case column" do
             with_model :ModelWithCamelCaseColumn do
@@ -151,10 +151,10 @@ describe PgSearch::Multisearch::Rebuilder do
               end
             end
 
-            it "creates search document without PG error" do
+            it "rebuilds without error" do
               time = Time.utc(2001, 1, 1, 0, 0, 0)
               rebuilder = described_class.new(Model, -> { time })
-              rebuilder.rebuild
+              expect { rebuilder.rebuild }.not_to raise_error
             end
           end
 
@@ -170,7 +170,7 @@ describe PgSearch::Multisearch::Rebuilder do
               end
             end
 
-            # rubocop:disable RSpec/ExampleLength
+            # standard:disable RSpec/ExampleLength
             it "generates SQL with the correct primary key" do
               time = Time.utc(2001, 1, 1, 0, 0, 0)
               rebuilder = described_class.new(ModelWithNonStandardPrimaryKey, -> { time })
@@ -199,7 +199,7 @@ describe PgSearch::Multisearch::Rebuilder do
               expect(executed_sql.length).to eq(1)
               expect(executed_sql.first.strip).to eq(expected_sql.strip)
             end
-            # rubocop:enable RSpec/ExampleLength
+            # standard:enable RSpec/ExampleLength
           end
         end
 
@@ -215,7 +215,7 @@ describe PgSearch::Multisearch::Rebuilder do
             end
           end
 
-          # rubocop:disable RSpec/ExampleLength
+          # standard:disable RSpec/ExampleLength
           it "calls update_pg_search_document on each record" do
             record = Model.create!
 
@@ -241,7 +241,7 @@ describe PgSearch::Multisearch::Rebuilder do
 
             expect(record.pg_search_document).to be_present
           end
-          # rubocop:enable RSpec/ExampleLength
+          # standard:enable RSpec/ExampleLength
         end
 
         context "when only additional_attributes is set" do
@@ -253,7 +253,7 @@ describe PgSearch::Multisearch::Rebuilder do
             model do
               include PgSearch::Model
               multisearchable against: :name,
-                              additional_attributes: ->(obj) { { additional_attribute_column: "#{obj.class}::#{obj.id}" } }
+                additional_attributes: ->(obj) { {additional_attribute_column: "#{obj.class}::#{obj.id}"} }
             end
           end
 
@@ -285,7 +285,7 @@ describe PgSearch::Multisearch::Rebuilder do
             end
           end
 
-          # rubocop:disable RSpec/ExampleLength
+          # standard:disable RSpec/ExampleLength
           it "calls update_pg_search_document on each record" do
             record_1 = Model.create!(active: true)
             record_2 = Model.create!(active: false)
@@ -311,7 +311,7 @@ describe PgSearch::Multisearch::Rebuilder do
             expect(record_1.pg_search_document).to be_present
             expect(record_2.pg_search_document).not_to be_present
           end
-          # rubocop:enable RSpec/ExampleLength
+          # standard:enable RSpec/ExampleLength
         end
 
         context "via :unless" do
@@ -326,7 +326,7 @@ describe PgSearch::Multisearch::Rebuilder do
             end
           end
 
-          # rubocop:disable RSpec/ExampleLength
+          # standard:disable RSpec/ExampleLength
           it "calls update_pg_search_document on each record" do
             record_1 = Model.create!(inactive: true)
             record_2 = Model.create!(inactive: false)
@@ -352,10 +352,10 @@ describe PgSearch::Multisearch::Rebuilder do
             expect(record_1.pg_search_document).not_to be_present
             expect(record_2.pg_search_document).to be_present
           end
-          # rubocop:enable RSpec/ExampleLength
+          # standard:enable RSpec/ExampleLength
         end
       end
     end
   end
 end
-# rubocop:enable RSpec/NestedGroups
+# standard:enable RSpec/NestedGroups

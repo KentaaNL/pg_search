@@ -7,12 +7,12 @@ module PgSearch
     def self.included(mod)
       mod.class_eval do
         has_one :pg_search_document,
-                as: :searchable,
-                class_name: "PgSearch::Document",
-                dependent: :delete
+          as: :searchable,
+          class_name: "PgSearch::Document",
+          dependent: :delete
 
         after_save :update_pg_search_document,
-                   if: -> { PgSearch.multisearch_enabled? }
+          if: -> { PgSearch.multisearch_enabled? }
       end
     end
 
@@ -39,7 +39,7 @@ module PgSearch
       conditions.all? { |condition| condition.to_proc.call(self) }
     end
 
-    def update_pg_search_document # rubocop:disable Metrics/AbcSize
+    def update_pg_search_document
       if_conditions = Array(pg_search_multisearchable_options[:if])
       unless_conditions = Array(pg_search_multisearchable_options[:unless])
 
@@ -50,7 +50,7 @@ module PgSearch
       if should_have_document
         create_or_update_pg_search_document
       else
-        pg_search_document&.destroy
+        pg_search_document&.destroy # standard:disable Rails/SaveBang
       end
     end
 
@@ -58,7 +58,7 @@ module PgSearch
       if !pg_search_document
         create_pg_search_document(pg_search_document_attrs)
       elsif should_update_pg_search_document?
-        pg_search_document.update(pg_search_document_attrs)
+        pg_search_document.update(pg_search_document_attrs) # standard:disable Rails/SaveBang
       end
     end
   end

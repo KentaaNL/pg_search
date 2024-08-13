@@ -5,19 +5,29 @@ require "pg_search/multisearch/rebuilder"
 module PgSearch
   module Multisearch
     class << self
-      def rebuild(model, deprecated_clean_up = nil, clean_up: true)
+      def rebuild(model, deprecated_clean_up = nil, clean_up: true, transactional: true)
         unless deprecated_clean_up.nil?
-          ActiveSupport::Deprecation.warn(
+          warn(
             "pg_search 3.0 will no longer accept a boolean second argument to PgSearchMultisearch.rebuild, " \
-            "use keyword argument `clean_up:` instead."
+            "use keyword argument `clean_up:` instead.",
+            category: :deprecated,
+            uplevel: 1
           )
           clean_up = deprecated_clean_up
         end
 
-        model.transaction do
-          PgSearch::Document.where(searchable_type: model.base_class.name).delete_all if clean_up
-          Rebuilder.new(model).rebuild
+        if transactional
+          model.transaction { execute(model, clean_up) }
+        else
+          execute(model, clean_up)
         end
+      end
+
+      private
+
+      def execute(model, clean_up)
+        PgSearch::Document.where(searchable_type: model.base_class.name).delete_all if clean_up
+        Rebuilder.new(model).rebuild
       end
     end
 

@@ -1,5 +1,25 @@
 # pg_search changelog
 
+## 2.3.7
+
+* Drop support for Ruby 2.6 and 2.7
+* Drop support for Active Record 6.0 and earlier
+* Support Ruby 3.2 and 3.3
+* Support Active Record 7.1
+* Support Active Record 7.2 (fatkodima)
+* Add U+02BB/U+02BC to disallowed tsquery characters (Vital Ryabchinskiy)
+* add support for Arel::Nodes::SqlLiteral columns (Kyle Fazzari)
+* Improve documentation (Prima Aulia Gusta, Ross Baird, Andy Atkinson)
+
+## 2.3.6
+
+* Drop support for Ruby 2.5
+* Support Ruby 3.1
+* Support Active Record 7.0
+* Don't require `:against` if `:tsvector_column` is specified (Travis Hunter)
+* Optionally disable transaction when rebuilding documents (Travis Hunter)
+* Preserve columns when chaining ::with_pg_search_highlight (jcsanti)
+
 ## 2.3.5
 
 * Add table of contents to README (Barry Woolgar)

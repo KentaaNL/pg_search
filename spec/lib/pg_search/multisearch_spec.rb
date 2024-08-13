@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "active_support/deprecation"
+require "active_support/core_ext/kernel/reporting"
 
-# rubocop:disable RSpec/NestedGroups
+# standard:disable RSpec/NestedGroups
 describe PgSearch::Multisearch do
   with_table "pg_search_documents", &DOCUMENTS_SCHEMA
 
@@ -31,6 +31,15 @@ describe PgSearch::Multisearch do
 
       described_class.rebuild(model)
       expect(model).to have_received(:transaction).once
+    end
+
+    context "when transactional is false" do
+      it "does not operate inside a transaction" do
+        allow(model).to receive(:transaction)
+
+        described_class.rebuild(model, transactional: false)
+        expect(model).not_to have_received(:transaction)
+      end
     end
 
     describe "cleaning up search documents for this model" do
@@ -73,7 +82,7 @@ describe PgSearch::Multisearch do
 
       context "when deprecated_clean_up is true" do
         it "deletes the document for the model" do
-          ActiveSupport::Deprecation.silence { described_class.rebuild(model, true) }
+          silence_warnings { described_class.rebuild(model, true) }
           expect(PgSearch::Document.count).to eq(1)
           expect(PgSearch::Document.first.searchable_type).to eq("Bar")
         end
@@ -81,7 +90,7 @@ describe PgSearch::Multisearch do
 
       context "when deprecated_clean_up is false" do
         it "does not delete the document for the model" do
-          ActiveSupport::Deprecation.silence { described_class.rebuild(model, false) }
+          silence_warnings { described_class.rebuild(model, false) }
           expect(PgSearch::Document.count).to eq(2)
         end
       end
@@ -126,7 +135,7 @@ describe PgSearch::Multisearch do
     end
 
     describe "the generated SQL" do
-      let(:now) { Time.now }
+      let(:now) { Time.now } # standard:disable Rails/TimeZone
 
       before { allow(Time).to receive(:now).and_return(now) }
 
@@ -186,4 +195,4 @@ describe PgSearch::Multisearch do
     end
   end
 end
-# rubocop:enable RSpec/NestedGroups
+# standard:enable RSpec/NestedGroups

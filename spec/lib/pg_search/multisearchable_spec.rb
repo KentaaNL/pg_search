@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-# rubocop:disable RSpec/NestedGroups
+# standard:disable RSpec/NestedGroups
 describe PgSearch::Multisearchable do
   with_table "pg_search_documents", &DOCUMENTS_SCHEMA
 
@@ -36,7 +36,7 @@ describe PgSearch::Multisearchable do
         belongs_to :multisearchable_parent
 
         after_destroy do
-          multisearchable_parent.update_attribute(:secret, rand(1000).to_s) # rubocop:disable Rails/SkipsModelValidations
+          multisearchable_parent.update_attribute(:secret, rand(1000).to_s)
         end
       end
     end
@@ -149,17 +149,17 @@ describe PgSearch::Multisearchable do
       end
 
       context "when searching against a single column" do
-        let(:multisearchable_options) { { against: :some_content } }
+        let(:multisearchable_options) { {against: :some_content} }
         let(:text) { "foo bar" }
 
         before do
           without_partial_double_verification do
             allow(record).to receive(:some_content) { text }
           end
-          record.save
+          record.save!
         end
 
-        describe '#content' do
+        describe "#content" do
           subject { super().pg_search_document.content }
 
           it { is_expected.to eq(text) }
@@ -167,17 +167,17 @@ describe PgSearch::Multisearchable do
       end
 
       context "when searching against multiple columns" do
-        let(:multisearchable_options) { { against: %i[attr_1 attr_2] } }
+        let(:multisearchable_options) { {against: %i[attr_1 attr_2]} }
 
         before do
           without_partial_double_verification do
-            allow(record).to receive(:attr_1).and_return('1')
-            allow(record).to receive(:attr_2).and_return('2')
+            allow(record).to receive(:attr_1).and_return("1")
+            allow(record).to receive(:attr_2).and_return("2")
           end
-          record.save
+          record.save!
         end
 
-        describe '#content' do
+        describe "#content" do
           subject { super().pg_search_document.content }
 
           it { is_expected.to eq("1 2") }
@@ -195,17 +195,17 @@ describe PgSearch::Multisearchable do
       end
 
       context "when searching against a single column" do
-        let(:multisearchable_options) { { against: :some_content } }
+        let(:multisearchable_options) { {against: :some_content} }
         let(:text) { "foo bar" }
 
         before do
           without_partial_double_verification do
             allow(record).to receive(:some_content) { text }
           end
-          record.save
+          record.save!
         end
 
-        describe '#content' do
+        describe "#content" do
           subject { super().pg_search_document.content }
 
           it { is_expected.to eq(text) }
@@ -213,17 +213,17 @@ describe PgSearch::Multisearchable do
       end
 
       context "when searching against multiple columns" do
-        let(:multisearchable_options) { { against: %i[attr_1 attr_2] } }
+        let(:multisearchable_options) { {against: %i[attr_1 attr_2]} }
 
         before do
           without_partial_double_verification do
-            allow(record).to receive(:attr_1).and_return('1')
-            allow(record).to receive(:attr_2).and_return('2')
+            allow(record).to receive(:attr_1).and_return("1")
+            allow(record).to receive(:attr_2).and_return("2")
           end
-          record.save
+          record.save!
         end
 
-        describe '#content' do
+        describe "#content" do
           subject { super().pg_search_document.content }
 
           it { is_expected.to eq("1 2") }
@@ -234,7 +234,7 @@ describe PgSearch::Multisearchable do
         let(:multisearchable_options) do
           {
             additional_attributes: lambda do |record|
-              { foo: record.bar }
+              {foo: record.bar}
             end
           }
         end
@@ -244,10 +244,10 @@ describe PgSearch::Multisearchable do
           without_partial_double_verification do
             allow(record).to receive(:bar).and_return(text)
             allow(record).to receive(:create_pg_search_document)
-            record.save
+            record.save!
             expect(record)
               .to have_received(:create_pg_search_document)
-              .with(content: '', foo: text)
+              .with(content: "", foo: text)
           end
         end
       end
@@ -266,10 +266,10 @@ describe PgSearch::Multisearchable do
           without_partial_double_verification do
             allow(record).to receive(:bar?).and_return(false)
             allow(record).to receive(:create_pg_search_document)
-            record.save
+            record.save!
             expect(record)
               .to have_received(:create_pg_search_document)
-              .with(content: '')
+              .with(content: "")
           end
         end
 
@@ -286,7 +286,7 @@ describe PgSearch::Multisearchable do
             it "does not update the document" do
               without_partial_double_verification do
                 allow(record.pg_search_document).to receive(:update)
-                record.save
+                record.save!
                 expect(record.pg_search_document).not_to have_received(:update)
               end
             end
@@ -301,7 +301,7 @@ describe PgSearch::Multisearchable do
 
             it "updates the document" do
               allow(record.pg_search_document).to receive(:update)
-              record.save
+              record.save!
               expect(record.pg_search_document).to have_received(:update)
             end
           end
@@ -854,4 +854,4 @@ describe PgSearch::Multisearchable do
     end
   end
 end
-# rubocop:enable RSpec/NestedGroups
+# standard:enable RSpec/NestedGroups
