@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "ostruct"
 
 # standard:disable RSpec/MultipleMemoizedHelpers, RSpec/NestedGroups
 describe PgSearch::Features::Trigram do
@@ -16,7 +15,8 @@ describe PgSearch::Features::Trigram do
     ]
   }
   let(:normalizer) { PgSearch::Normalizer.new(config) }
-  let(:config) { instance_double(PgSearch::Configuration, ignore: []) }
+  let(:config) { instance_double(PgSearch::Configuration, ignore: ignore) }
+  let(:ignore) { [] }
 
   let(:coalesced_columns) do
     <<~SQL.squish
@@ -49,7 +49,7 @@ describe PgSearch::Features::Trigram do
     end
 
     context "when ignoring accents" do
-      let(:config) { instance_double(PgSearch::Configuration, ignore: [:accents]) }
+      let(:ignore) { [:accents] }
 
       it "escapes the search document and query, but not the accent function" do
         expect(feature.conditions.to_sql).to eq("(unaccent('#{query}') % (unaccent(#{coalesced_columns})))")
